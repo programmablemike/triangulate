@@ -54,7 +54,7 @@ environment variables (`TRIANGULATE_START_DIRECTORY` and
 `TRIANGULATE_MARKER_FILE`).
 
 You can also set the value through the `.triangulate` configuration file (by default
-loaded from `$HOME/.triangulate`; override with `--config`).
+loaded from `$HOME/.triangulate`; override with `--config`). Settings live at the top level.
 
 ```json
 {
@@ -154,13 +154,11 @@ Here's the configuration values that can be set.
 
 ```json
 {
-  "triangulate": {
-    "marker_files": ["BUILD.root"],
-    "start_directory": "/home/mike/myproject",
-    "case_sensitive": true,
-    "max_depth": 10,
-    "env_var_enable": true,
-    "env_var_name": "TRIANGULATE_PROJECT_ROOT"
-  }
+  "marker_files": ["BUILD.root"],
+  "start_directory": "/home/mike/myproject",
+  "case_sensitive": true,
+  "max_depth": 10,
+  "env_var_enable": true,
+  "env_var_name": "TRIANGULATE_PROJECT_ROOT"
 }
 ```

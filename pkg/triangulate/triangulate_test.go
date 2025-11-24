@@ -13,7 +13,8 @@ func TestFindRootCaseSensitive(t *testing.T) {
 	mustWriteFile(t, filepath.Join(dir, "TRIANGULATE"), "")
 
 	opts, err := ResolveOptions(Options{
-		StartDir: deep,
+		StartDir:   deep,
+		ConfigPath: filepath.Join(dir, ".triangulate"),
 	})
 	if err != nil {
 		t.Fatalf("ResolveOptions: %v", err)
@@ -36,6 +37,7 @@ func TestFindRootCaseInsensitive(t *testing.T) {
 
 	opts, err := ResolveOptions(Options{
 		StartDir:         deep,
+		ConfigPath:       filepath.Join(dir, ".triangulate"),
 		CaseSensitive:    false,
 		CaseSensitiveSet: true,
 		MarkerFiles:      []string{"TRIANGULATE"},
@@ -57,14 +59,14 @@ func TestResolveOptionsPrecedence(t *testing.T) {
 	dir := t.TempDir()
 	configPath := filepath.Join(dir, ".triangulate")
 	mustWriteFile(t, configPath, `
-{"triangulate":{
+{
   "marker_file":"CONFIG_MARKER",
   "start_directory":"/config",
   "case_sensitive":true,
   "max_depth":1,
   "env_var_enable":true,
   "env_var_name":"CONFIG_VAR"
-}}
+}
 `)
 
 	t.Setenv("TRIANGULATE_MARKER_FILE", "ENV_MARKER")
@@ -116,14 +118,14 @@ func TestResolveOptionsEnvOverridesConfig(t *testing.T) {
 	dir := t.TempDir()
 	configPath := filepath.Join(dir, ".triangulate")
 	mustWriteFile(t, configPath, `
-{"triangulate":{
+{
   "marker_file":"CONFIG_MARKER",
   "start_directory":"/config",
   "case_sensitive":true,
   "max_depth":4,
   "env_var_enable":true,
   "env_var_name":"CONFIG_VAR"
-}}
+}
 `)
 
 	t.Setenv("TRIANGULATE_MARKER_FILE", "ENV_MARKER")
@@ -168,6 +170,7 @@ func TestFindRootMaxDepth(t *testing.T) {
 
 	opts, err := ResolveOptions(Options{
 		StartDir:    deep,
+		ConfigPath:  filepath.Join(dir, ".triangulate"),
 		MaxDepth:    1,
 		MaxDepthSet: true,
 	})
@@ -189,7 +192,8 @@ func TestFindRootPrefersNearestMarker(t *testing.T) {
 	mustWriteFile(t, filepath.Join(mid, "TRIANGULATE"), "")
 
 	opts, err := ResolveOptions(Options{
-		StartDir: deep,
+		StartDir:   deep,
+		ConfigPath: filepath.Join(root, ".triangulate"),
 	})
 	if err != nil {
 		t.Fatalf("ResolveOptions: %v", err)
@@ -214,7 +218,9 @@ func TestResolveOptionsEnvironment(t *testing.T) {
 	t.Setenv("TRIANGULATE_ENV_VAR_ENABLE", "true")
 	t.Setenv("TRIANGULATE_ENV_VAR_NAME", "ENV_ONLY_VAR")
 
-	opts, err := ResolveOptions(Options{})
+	opts, err := ResolveOptions(Options{
+		ConfigPath: filepath.Join(dir, ".triangulate"),
+	})
 	if err != nil {
 		t.Fatalf("ResolveOptions: %v", err)
 	}
@@ -242,6 +248,35 @@ func TestResolveOptionsEnvironment(t *testing.T) {
 	}
 	if opts.EnvVarName != "ENV_ONLY_VAR" {
 		t.Fatalf("EnvVarName = %q; want ENV_ONLY_VAR", opts.EnvVarName)
+	}
+}
+
+func TestResolveOptionsTopLevelConfig(t *testing.T) {
+	dir := t.TempDir()
+	configPath := filepath.Join(dir, ".triangulate")
+	mustWriteFile(t, configPath, `
+{
+  "marker_files": ["TOP_MARKER"],
+  "env_var_enable": true,
+  "env_var_name": "TOP_VAR"
+}
+`)
+
+	opts, err := ResolveOptions(Options{
+		ConfigPath: configPath,
+	})
+	if err != nil {
+		t.Fatalf("ResolveOptions: %v", err)
+	}
+
+	if len(opts.MarkerFiles) != 1 || opts.MarkerFiles[0] != "TOP_MARKER" {
+		t.Fatalf("MarkerFiles = %v; want [TOP_MARKER]", opts.MarkerFiles)
+	}
+	if !opts.EnvVarEnable {
+		t.Fatalf("EnvVarEnable = %v; want true", opts.EnvVarEnable)
+	}
+	if opts.EnvVarName != "TOP_VAR" {
+		t.Fatalf("EnvVarName = %q; want TOP_VAR", opts.EnvVarName)
 	}
 }
 
