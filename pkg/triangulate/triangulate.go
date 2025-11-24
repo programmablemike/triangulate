@@ -1,6 +1,7 @@
 package triangulate
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -25,14 +26,15 @@ type Options struct {
 	EnvVarNameSet    bool
 }
 
-type triangulateConfig struct {
-	MarkerFile     string   `json:"marker_file"`
-	MarkerFiles    []string `json:"marker_files"`
-	StartDirectory string   `json:"start_directory"`
-	CaseSensitive  *bool    `json:"case_sensitive"`
-	MaxDepth       *int     `json:"max_depth"`
-	EnvVarEnable   *bool    `json:"env_var_enable"`
-	EnvVarName     string   `json:"env_var_name"`
+// Config represents the persisted configuration file structure.
+type Config struct {
+	MarkerFile     string   `json:"marker_file,omitempty"`
+	MarkerFiles    []string `json:"marker_files,omitempty"`
+	StartDirectory string   `json:"start_directory,omitempty"`
+	CaseSensitive  *bool    `json:"case_sensitive,omitempty"`
+	MaxDepth       *int     `json:"max_depth,omitempty"`
+	EnvVarEnable   *bool    `json:"env_var_enable,omitempty"`
+	EnvVarName     string   `json:"env_var_name,omitempty"`
 }
 
 var (
@@ -196,40 +198,35 @@ func (o *Options) applyEnv() {
 }
 
 func (o *Options) applyConfig(path string) {
-	data, err := os.ReadFile(path)
+	cfg, err := ReadConfig(path)
 	if err != nil {
 		return
 	}
 
-	var section triangulateConfig
-	if err := json.Unmarshal(data, &section); err != nil {
-		return
-	}
-
-	markers := normalizedMarkers(append([]string{}, section.MarkerFiles...))
-	if section.MarkerFile != "" {
-		markers = append(markers, section.MarkerFile)
+	markers := normalizedMarkers(append([]string{}, cfg.MarkerFiles...))
+	if cfg.MarkerFile != "" {
+		markers = append(markers, cfg.MarkerFile)
 	}
 
 	if len(markers) > 0 {
 		o.MarkerFiles = markers
 	}
-	if section.StartDirectory != "" {
-		o.StartDir = section.StartDirectory
+	if cfg.StartDirectory != "" {
+		o.StartDir = cfg.StartDirectory
 	}
-	if section.CaseSensitive != nil {
-		o.CaseSensitive = *section.CaseSensitive
+	if cfg.CaseSensitive != nil {
+		o.CaseSensitive = *cfg.CaseSensitive
 		o.CaseSensitiveSet = true
 	}
-	if section.MaxDepth != nil && *section.MaxDepth >= 0 {
-		o.MaxDepth = *section.MaxDepth
+	if cfg.MaxDepth != nil && *cfg.MaxDepth >= 0 {
+		o.MaxDepth = *cfg.MaxDepth
 		o.MaxDepthSet = true
 	}
-	if section.EnvVarEnable != nil {
-		o.EnvVarEnable = *section.EnvVarEnable
+	if cfg.EnvVarEnable != nil {
+		o.EnvVarEnable = *cfg.EnvVarEnable
 		o.EnvVarEnableSet = true
 	}
-	if trimmed := strings.TrimSpace(section.EnvVarName); trimmed != "" {
+	if trimmed := strings.TrimSpace(cfg.EnvVarName); trimmed != "" {
 		o.EnvVarName = trimmed
 		o.EnvVarNameSet = true
 	}
@@ -253,4 +250,53 @@ func DefaultConfigPath() string {
 		return defaultConfigName
 	}
 	return filepath.Join(home, defaultConfigName)
+}
+
+// ParseConfig parses raw JSON configuration data into a Config.
+func ParseConfig(data []byte) (Config, error) {
+	var cfg Config
+	dec := json.NewDecoder(bytes.NewReader(data))
+	dec.DisallowUnknownFields()
+	if err := dec.Decode(&cfg); err != nil {
+		return Config{}, err
+	}
+	return cfg, nil
+}
+
+// ReadConfig reads and parses the configuration file from path.
+func ReadConfig(path string) (Config, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return Config{}, err
+	}
+	return ParseConfig(data)
+}
+
+// WriteConfig writes cfg to path in JSON format, creating parent directories if needed.
+func WriteConfig(path string, cfg Config) error {
+	data, err := json.MarshalIndent(cfg, "", "  ")
+	if err != nil {
+		return err
+	}
+	if dir := filepath.Dir(path); dir != "" && dir != "." {
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			return fmt.Errorf("create config dir: %w", err)
+		}
+	}
+	return os.WriteFile(path, data, 0o644)
+}
+
+// ValidateConfig ensures the provided JSON data conforms to Config.
+func ValidateConfig(data []byte) error {
+	_, err := ParseConfig(data)
+	return err
+}
+
+// ValidateConfigFile validates the configuration file at path.
+func ValidateConfigFile(path string) error {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	return ValidateConfig(data)
 }
