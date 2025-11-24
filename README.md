@@ -43,13 +43,18 @@ We run the following commands:
 $: cd /home/mike/lib/logging
 # Run a command using triangulate to set the current directory to the root directory first
 $: pushd $(triangulate); go build -o ./output/myproject; popd;
+
+# You can also start from an explicit directory path (positional arg)
+$: triangulate /home/mike/lib/logging
+/home/mike/myproject
 ```
 
 For flexibility we allow overriding the default file and starting path using
 environment variables (`TRIANGULATE_START_DIRECTORY` and
 `TRIANGULATE_MARKER_FILE`).
 
-You can also set the value through the `.triangulate` configuration file.
+You can also set the value through the `.triangulate` configuration file (by default
+loaded from `$HOME/.triangulate`; override with `--config`).
 
 ```json
 {
@@ -132,10 +137,15 @@ root.
 Here's a list of environment variables you can set.
 
 `TRIANGULATE_MARKER_FILE`: Set the file that marks the root directory.
+
 `TRIANGULATE_START_DIRECTORY`: Set the default directory.
+
 `TRIANGULATE_CASE_SENSITIVE`: Set the case sensitivity.
+
 `TRIANGULATE_MAX_DEPTH`: Set the maximum search depth.
+
 `TRIANGULATE_ENV_VAR_ENABLE`: Set an environment variable with the triangulated path.
+
 `TRIANGULATE_ENV_VAR_NAME`: The name of the environment variable to set.
 
 ## configuration example

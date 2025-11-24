@@ -31,7 +31,7 @@ func RootFlags() []cli.Flag {
 		},
 		&cli.StringFlag{
 			Name:  "config",
-			Value: ".triangulate",
+			Value: triangulate.DefaultConfigPath(),
 			Usage: "Path to config file",
 		},
 		&cli.BoolFlag{

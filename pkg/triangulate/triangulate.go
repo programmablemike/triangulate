@@ -42,8 +42,8 @@ type triangulateConfig struct {
 var (
 	defaultMarkerFiles   = []string{"TRIANGULATE"}
 	defaultCaseSensitive = true
-	defaultConfigPath    = ".triangulate"
 	defaultEnvVarName    = "TRIANGULATE_ROOT"
+	defaultConfigName    = ".triangulate"
 
 	// ErrNotFound indicates no marker file could be found.
 	ErrNotFound = errors.New("triangulate: marker not found")
@@ -55,7 +55,7 @@ func ResolveOptions(src Options) (Options, error) {
 	opts := Options{
 		MarkerFiles:   append([]string{}, defaultMarkerFiles...),
 		CaseSensitive: defaultCaseSensitive,
-		ConfigPath:    defaultConfigPath,
+		ConfigPath:    DefaultConfigPath(),
 	}
 
 	if src.ConfigPath != "" {
@@ -248,4 +248,14 @@ func normalizedMarkers(markers []string) []string {
 		}
 	}
 	return out
+}
+
+// DefaultConfigPath returns the default path to the configuration file.
+// It prefers $HOME/.triangulate but falls back to the filename in the cwd if $HOME is unavailable.
+func DefaultConfigPath() string {
+	home, err := os.UserHomeDir()
+	if err != nil || strings.TrimSpace(home) == "" {
+		return defaultConfigName
+	}
+	return filepath.Join(home, defaultConfigName)
 }
