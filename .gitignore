@@ -1,0 +1,14 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binaries and coverage outputs
+*.test
+*.out
+coverage.out
+
+# Go build output
+bin/
