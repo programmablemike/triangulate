@@ -17,6 +17,7 @@ func main() {
 		Action:    cmd.RootAction,
 		Commands: []*cli.Command{
 			cmd.NewShellCommand(),
+			cmd.NewConfigCommand(),
 		},
 	}
 

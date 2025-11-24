@@ -162,3 +162,6 @@ Here's the configuration values that can be set.
   "env_var_name": "TRIANGULATE_PROJECT_ROOT"
 }
 ```
+
+Manage the file from the CLI with `triangulate config`: use `list` to view all settings,
+`get <key>` / `set <key> <value>` to query or update fields, and `validate` to check format.
