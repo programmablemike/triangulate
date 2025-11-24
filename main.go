@@ -8,11 +8,14 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+var version = "dev"
+
 func main() {
 	app := &cli.App{
 		Name:      "triangulate",
 		Usage:     "Identify project root directories",
 		ArgsUsage: "[start-directory]",
+		Version:   version,
 		Flags:     cmd.RootFlags(),
 		Action:    cmd.RootAction,
 		Commands: []*cli.Command{
