@@ -18,11 +18,9 @@ type Options struct {
 	CaseSensitive    bool
 	MaxDepth         int
 	ConfigPath       string
-	EnvVarEnable     bool
 	EnvVarName       string
 	CaseSensitiveSet bool
 	MaxDepthSet      bool
-	EnvVarEnableSet  bool
 	EnvVarNameSet    bool
 }
 
@@ -33,14 +31,12 @@ type Config struct {
 	StartDirectory string   `json:"start_directory,omitempty"`
 	CaseSensitive  *bool    `json:"case_sensitive,omitempty"`
 	MaxDepth       *int     `json:"max_depth,omitempty"`
-	EnvVarEnable   *bool    `json:"env_var_enable,omitempty"`
 	EnvVarName     string   `json:"env_var_name,omitempty"`
 }
 
 var (
 	defaultMarkerFiles   = []string{"TRIANGULATE"}
 	defaultCaseSensitive = true
-	defaultEnvVarName    = "TRIANGULATE_ROOT"
 	defaultConfigName    = ".triangulate"
 
 	// ErrNotFound indicates no marker file could be found.
@@ -74,10 +70,6 @@ func ResolveOptions(src Options) (Options, error) {
 
 	if len(opts.MarkerFiles) == 0 {
 		opts.MarkerFiles = append([]string{}, defaultMarkerFiles...)
-	}
-
-	if opts.EnvVarEnable && strings.TrimSpace(opts.EnvVarName) == "" {
-		opts.EnvVarName = defaultEnvVarName
 	}
 
 	return opts, nil
@@ -156,10 +148,6 @@ func (o *Options) applyOverrides(src Options) {
 		o.MaxDepth = src.MaxDepth
 		o.MaxDepthSet = true
 	}
-	if src.EnvVarEnableSet {
-		o.EnvVarEnable = src.EnvVarEnable
-		o.EnvVarEnableSet = true
-	}
 	if src.EnvVarNameSet && strings.TrimSpace(src.EnvVarName) != "" {
 		o.EnvVarName = strings.TrimSpace(src.EnvVarName)
 		o.EnvVarNameSet = true
@@ -183,12 +171,6 @@ func (o *Options) applyEnv() {
 		if val, err := strconv.Atoi(raw); err == nil && val >= 0 {
 			o.MaxDepth = val
 			o.MaxDepthSet = true
-		}
-	}
-	if raw := strings.TrimSpace(os.Getenv("TRIANGULATE_ENV_VAR_ENABLE")); raw != "" {
-		if val, err := strconv.ParseBool(raw); err == nil {
-			o.EnvVarEnable = val
-			o.EnvVarEnableSet = true
 		}
 	}
 	if name := strings.TrimSpace(os.Getenv("TRIANGULATE_ENV_VAR_NAME")); name != "" {
@@ -221,10 +203,6 @@ func (o *Options) applyConfig(path string) {
 	if cfg.MaxDepth != nil && *cfg.MaxDepth >= 0 {
 		o.MaxDepth = *cfg.MaxDepth
 		o.MaxDepthSet = true
-	}
-	if cfg.EnvVarEnable != nil {
-		o.EnvVarEnable = *cfg.EnvVarEnable
-		o.EnvVarEnableSet = true
 	}
 	if trimmed := strings.TrimSpace(cfg.EnvVarName); trimmed != "" {
 		o.EnvVarName = trimmed

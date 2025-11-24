@@ -147,11 +147,6 @@ func lookupConfigValue(cfg triangulate.Config, key string) (string, error) {
 			return "", errors.New("max_depth not set")
 		}
 		return strconv.Itoa(*cfg.MaxDepth), nil
-	case "env_var_enable":
-		if cfg.EnvVarEnable == nil {
-			return "", errors.New("env_var_enable not set")
-		}
-		return strconv.FormatBool(*cfg.EnvVarEnable), nil
 	case "env_var_name":
 		if cfg.EnvVarName == "" {
 			return "", errors.New("env_var_name not set")
@@ -185,12 +180,6 @@ func setConfigValue(cfg *triangulate.Config, key, value string) error {
 			return fmt.Errorf("max_depth must be >= 0")
 		}
 		cfg.MaxDepth = &val
-	case "env_var_enable":
-		val, err := strconv.ParseBool(strings.TrimSpace(value))
-		if err != nil {
-			return fmt.Errorf("parse bool: %w", err)
-		}
-		cfg.EnvVarEnable = &val
 	case "env_var_name":
 		cfg.EnvVarName = strings.TrimSpace(value)
 	default:
@@ -223,9 +212,6 @@ func trimConfig(cfg triangulate.Config) triangulate.Config {
 	}
 	if cfg.MaxDepth != nil {
 		out.MaxDepth = cfg.MaxDepth
-	}
-	if cfg.EnvVarEnable != nil {
-		out.EnvVarEnable = cfg.EnvVarEnable
 	}
 	if cfg.EnvVarName != "" {
 		out.EnvVarName = cfg.EnvVarName

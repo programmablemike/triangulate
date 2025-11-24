@@ -64,7 +64,6 @@ func TestResolveOptionsPrecedence(t *testing.T) {
   "start_directory":"/config",
   "case_sensitive":true,
   "max_depth":1,
-  "env_var_enable":true,
   "env_var_name":"CONFIG_VAR"
 }
 `)
@@ -84,8 +83,6 @@ func TestResolveOptionsPrecedence(t *testing.T) {
 		CaseSensitiveSet: true,
 		MaxDepth:         5,
 		MaxDepthSet:      true,
-		EnvVarEnable:     true,
-		EnvVarEnableSet:  true,
 		EnvVarName:       "CLI_VAR",
 		EnvVarNameSet:    true,
 	})
@@ -106,9 +103,6 @@ func TestResolveOptionsPrecedence(t *testing.T) {
 	if opts.MaxDepth != 5 {
 		t.Fatalf("MaxDepth = %d; want 5", opts.MaxDepth)
 	}
-	if !opts.EnvVarEnable {
-		t.Fatalf("EnvVarEnable = %v; want true", opts.EnvVarEnable)
-	}
 	if opts.EnvVarName != "CLI_VAR" {
 		t.Fatalf("EnvVarName = %q; want CLI_VAR", opts.EnvVarName)
 	}
@@ -123,7 +117,6 @@ func TestResolveOptionsEnvOverridesConfig(t *testing.T) {
   "start_directory":"/config",
   "case_sensitive":true,
   "max_depth":4,
-  "env_var_enable":true,
   "env_var_name":"CONFIG_VAR"
 }
 `)
@@ -132,7 +125,6 @@ func TestResolveOptionsEnvOverridesConfig(t *testing.T) {
 	t.Setenv("TRIANGULATE_START_DIRECTORY", "/env")
 	t.Setenv("TRIANGULATE_CASE_SENSITIVE", "false")
 	t.Setenv("TRIANGULATE_MAX_DEPTH", "2")
-	t.Setenv("TRIANGULATE_ENV_VAR_ENABLE", "false")
 	t.Setenv("TRIANGULATE_ENV_VAR_NAME", "ENV_VAR")
 
 	opts, err := ResolveOptions(Options{
@@ -153,9 +145,6 @@ func TestResolveOptionsEnvOverridesConfig(t *testing.T) {
 	}
 	if opts.MaxDepth != 2 {
 		t.Fatalf("MaxDepth = %d; want 2", opts.MaxDepth)
-	}
-	if opts.EnvVarEnable {
-		t.Fatalf("EnvVarEnable = %v; want false", opts.EnvVarEnable)
 	}
 	if opts.EnvVarName != "ENV_VAR" {
 		t.Fatalf("EnvVarName = %q; want ENV_VAR", opts.EnvVarName)
@@ -215,7 +204,6 @@ func TestResolveOptionsEnvironment(t *testing.T) {
 	t.Setenv("TRIANGULATE_START_DIRECTORY", dir)
 	t.Setenv("TRIANGULATE_CASE_SENSITIVE", "false")
 	t.Setenv("TRIANGULATE_MAX_DEPTH", "2")
-	t.Setenv("TRIANGULATE_ENV_VAR_ENABLE", "true")
 	t.Setenv("TRIANGULATE_ENV_VAR_NAME", "ENV_ONLY_VAR")
 
 	opts, err := ResolveOptions(Options{
@@ -243,9 +231,6 @@ func TestResolveOptionsEnvironment(t *testing.T) {
 	if opts.MaxDepth != 2 {
 		t.Fatalf("MaxDepth = %d; want 2", opts.MaxDepth)
 	}
-	if !opts.EnvVarEnable {
-		t.Fatalf("EnvVarEnable = %v; want true", opts.EnvVarEnable)
-	}
 	if opts.EnvVarName != "ENV_ONLY_VAR" {
 		t.Fatalf("EnvVarName = %q; want ENV_ONLY_VAR", opts.EnvVarName)
 	}
@@ -257,7 +242,6 @@ func TestResolveOptionsTopLevelConfig(t *testing.T) {
 	mustWriteFile(t, configPath, `
 {
   "marker_files": ["TOP_MARKER"],
-  "env_var_enable": true,
   "env_var_name": "TOP_VAR"
 }
 `)
@@ -271,9 +255,6 @@ func TestResolveOptionsTopLevelConfig(t *testing.T) {
 
 	if len(opts.MarkerFiles) != 1 || opts.MarkerFiles[0] != "TOP_MARKER" {
 		t.Fatalf("MarkerFiles = %v; want [TOP_MARKER]", opts.MarkerFiles)
-	}
-	if !opts.EnvVarEnable {
-		t.Fatalf("EnvVarEnable = %v; want true", opts.EnvVarEnable)
 	}
 	if opts.EnvVarName != "TOP_VAR" {
 		t.Fatalf("EnvVarName = %q; want TOP_VAR", opts.EnvVarName)

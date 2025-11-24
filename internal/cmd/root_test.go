@@ -78,7 +78,7 @@ func TestRootActionSetsEnvVarDefaultName(t *testing.T) {
 	cli.OsExiter = func(int) {}
 	defer func() { cli.OsExiter = origExiter }()
 
-	if err := app.Run([]string{"triangulate", "--env-var-enable", deep}); err != nil {
+	if err := app.Run([]string{"triangulate", "--env-var-name", defaultName, deep}); err != nil {
 		t.Fatalf("app.Run: %v", err)
 	}
 
@@ -106,7 +106,7 @@ func TestRootActionSetsEnvVarCustomName(t *testing.T) {
 	cli.OsExiter = func(int) {}
 	defer func() { cli.OsExiter = origExiter }()
 
-	if err := app.Run([]string{"triangulate", "--env-var-enable", "--env-var-name", envName, deep}); err != nil {
+	if err := app.Run([]string{"triangulate", "--env-var-name", envName, deep}); err != nil {
 		t.Fatalf("app.Run: %v", err)
 	}
 

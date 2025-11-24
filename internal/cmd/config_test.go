@@ -39,7 +39,7 @@ func TestConfigList(t *testing.T) {
 	if !strings.Contains(out, `"marker_file": "BUILD.root"`) {
 		t.Fatalf("list output missing marker_file: %s", out)
 	}
-	if strings.Contains(out, `"case_sensitive"`) || strings.Contains(out, `"env_var_enable"`) {
+	if strings.Contains(out, `"case_sensitive"`) {
 		t.Fatalf("expected unset fields omitted, got: %s", out)
 	}
 }
