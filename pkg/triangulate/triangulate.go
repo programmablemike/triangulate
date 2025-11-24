@@ -25,10 +25,6 @@ type Options struct {
 	EnvVarNameSet    bool
 }
 
-type configFile struct {
-	Triangulate triangulateConfig `json:"triangulate"`
-}
-
 type triangulateConfig struct {
 	MarkerFile     string   `json:"marker_file"`
 	MarkerFiles    []string `json:"marker_files"`
@@ -205,12 +201,11 @@ func (o *Options) applyConfig(path string) {
 		return
 	}
 
-	var cfg configFile
-	if err := json.Unmarshal(data, &cfg); err != nil {
+	var section triangulateConfig
+	if err := json.Unmarshal(data, &section); err != nil {
 		return
 	}
 
-	section := cfg.Triangulate
 	markers := normalizedMarkers(append([]string{}, section.MarkerFiles...))
 	if section.MarkerFile != "" {
 		markers = append(markers, section.MarkerFile)

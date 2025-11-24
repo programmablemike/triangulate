@@ -11,6 +11,7 @@ import (
 )
 
 func TestRootActionUsesPositionalStartDir(t *testing.T) {
+	t.Setenv("HOME", t.TempDir())
 	root := t.TempDir()
 	deep := filepath.Join(root, "a", "b")
 	mustMkdirAll(t, deep)
@@ -38,6 +39,7 @@ func TestRootActionUsesPositionalStartDir(t *testing.T) {
 }
 
 func TestRootActionRejectsStartFlagWithPositional(t *testing.T) {
+	t.Setenv("HOME", t.TempDir())
 	app := &cli.App{
 		Flags:  RootFlags(),
 		Action: RootAction,
@@ -58,6 +60,7 @@ func TestRootActionRejectsStartFlagWithPositional(t *testing.T) {
 }
 
 func TestRootActionSetsEnvVarDefaultName(t *testing.T) {
+	t.Setenv("HOME", t.TempDir())
 	root := t.TempDir()
 	deep := filepath.Join(root, "a", "b")
 	mustMkdirAll(t, deep)
@@ -85,6 +88,7 @@ func TestRootActionSetsEnvVarDefaultName(t *testing.T) {
 }
 
 func TestRootActionSetsEnvVarCustomName(t *testing.T) {
+	t.Setenv("HOME", t.TempDir())
 	root := t.TempDir()
 	deep := filepath.Join(root, "a", "b")
 	mustMkdirAll(t, deep)
