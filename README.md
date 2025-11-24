@@ -144,9 +144,7 @@ Here's a list of environment variables you can set.
 
 `TRIANGULATE_MAX_DEPTH`: Set the maximum search depth.
 
-`TRIANGULATE_ENV_VAR_ENABLE`: Set an environment variable with the triangulated path.
-
-`TRIANGULATE_ENV_VAR_NAME`: The name of the environment variable to set.
+`TRIANGULATE_ENV_VAR_NAME`: The name of the environment variable to set. When set, the value is exported automatically.
 
 ## configuration example
 
@@ -158,7 +156,6 @@ Here's the configuration values that can be set.
   "start_directory": "/home/mike/myproject",
   "case_sensitive": true,
   "max_depth": 10,
-  "env_var_enable": true,
   "env_var_name": "TRIANGULATE_PROJECT_ROOT"
 }
 ```

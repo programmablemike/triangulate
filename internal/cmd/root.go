@@ -34,13 +34,9 @@ func RootFlags() []cli.Flag {
 			Value: triangulate.DefaultConfigPath(),
 			Usage: "Path to config file",
 		},
-		&cli.BoolFlag{
-			Name:  "env-var-enable",
-			Usage: "Set an environment variable to the triangulated path",
-		},
 		&cli.StringFlag{
 			Name:  "env-var-name",
-			Usage: "Name of environment variable to set when enabled",
+			Usage: "Name of environment variable to set with the triangulated path",
 		},
 	}
 }
@@ -75,10 +71,6 @@ func RootAction(c *cli.Context) error {
 		src.MaxDepth = md
 		src.MaxDepthSet = true
 	}
-	if c.IsSet("env-var-enable") {
-		src.EnvVarEnable = c.Bool("env-var-enable")
-		src.EnvVarEnableSet = true
-	}
 	if name := strings.TrimSpace(c.String("env-var-name")); name != "" {
 		src.EnvVarName = name
 		src.EnvVarNameSet = true
@@ -94,7 +86,7 @@ func RootAction(c *cli.Context) error {
 		return err
 	}
 
-	if opts.EnvVarEnable {
+	if opts.EnvVarName != "" {
 		name := opts.EnvVarName
 		if err := os.Setenv(name, root); err != nil {
 			return fmt.Errorf("set env var %q: %w", name, err)
