@@ -58,6 +58,17 @@ homebrew_casks:
     description: CLI tool for identifying a project's root directory by marker file.
     license: MIT
 
+notarize:
+  macos:
+    - enabled: true
+      sign:
+        certificate: "{{.Env.MACOS_CERTIFICATE}}"
+        password: "{{.Env.MACOS_CERTIFICATE_PWD}}"
+      notarize:
+        issuer_id: "{{.Env.MACOS_NOTARY_ISSUER_ID}}"
+        key_id: "{{.Env.MACOS_NOTARY_KEY_ID}}"
+        key: "{{.Env.MACOS_NOTARY_KEY}}"
+
 changelog:
   sort: asc
   filters:
