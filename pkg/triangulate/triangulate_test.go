@@ -72,7 +72,6 @@ func TestResolveOptionsPrecedence(t *testing.T) {
 	t.Setenv("TRIANGULATE_START_DIRECTORY", "/env")
 	t.Setenv("TRIANGULATE_CASE_SENSITIVE", "false")
 	t.Setenv("TRIANGULATE_MAX_DEPTH", "3")
-	t.Setenv("TRIANGULATE_ENV_VAR_ENABLE", "false")
 	t.Setenv("TRIANGULATE_ENV_VAR_NAME", "ENV_VAR")
 
 	opts, err := ResolveOptions(Options{
