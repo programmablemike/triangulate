@@ -3,6 +3,15 @@
 Triangulate is a command-line tool for identifying a project's root directory
 path.
 
+## installation
+
+### Homebrew
+
+```shell
+brew tap programmablemike/homebrew-tap
+brew install triangulate
+```
+
 ## license
 
 This project is licensed under the MIT License. See [LICENSE](./LICENSE) for details.
