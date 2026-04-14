@@ -48,12 +48,12 @@ nfpms:
       - rpm
     bindir: /usr/bin
 
-brews:
+homebrew_casks:
   - name: triangulate
     repository:
       owner: programmablemike
       name: homebrew-tap
-      token: "{{ .Env.TAP_GITHUB_TOKEN }}"
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
     homepage: https://github.com/programmablemike/triangulate
     description: CLI tool for identifying a project's root directory by marker file.
     license: MIT
