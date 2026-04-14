@@ -1,4 +1,4 @@
-name: Tag on VERSION change
+name: Release
 
 on:
   push:
@@ -6,8 +6,10 @@ on:
     paths: [VERSION]
 
 jobs:
-  tag:
+  release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,11 +29,25 @@ jobs:
           fi
 
       - name: Create and push tag
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ver="v${{ steps.version.outputs.ver }}"
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git tag -a "$ver" -m "$ver"
           git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "$ver"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          version: '~> v2'
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAP_GITHUB_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
