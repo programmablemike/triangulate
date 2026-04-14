@@ -1,3 +1,5 @@
+version: 2
+
 project_name: triangulate
 
 before:
@@ -21,10 +23,60 @@ builds:
 
 archives:
   - id: triangulate
-    builds:
+    ids:
       - triangulate
-    format: tar.gz
+    formats:
+      - tar.gz
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+
+nfpms:
+  - id: triangulate
+    package_name: triangulate
+    ids:
+      - triangulate
+    vendor: programmablemike
+    homepage: https://github.com/programmablemike/triangulate
+    maintainer: programmablemike <pkg-maintainer@programmablemike.com>
+    description: CLI tool for identifying a project's root directory by marker file.
+    license: MIT
+    formats:
+      - deb
+      - rpm
+    bindir: /usr/bin
+
+brews:
+  - name: triangulate
+    repository:
+      owner: programmablemike
+      name: homebrew-tap
+      token: "{{ .Env.TAP_GITHUB_TOKEN }}"
+    homepage: https://github.com/programmablemike/triangulate
+    description: CLI tool for identifying a project's root directory by marker file.
+    license: MIT
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^chore:"
+      - "^docs:"
+      - "^ci:"
+      - merge conflict
+      - Merge pull request
+      - Merge remote-tracking branch
+  groups:
+    - title: Features
+      regexp: "^feat(ure)?(\\(.+\\))?:"
+      order: 0
+    - title: Bug Fixes
+      regexp: "^(fix|bug)"
+      order: 1
+    - title: Other
+      order: 999
 
 checksum:
   name_template: "{{ .ProjectName }}_checksums.txt"
