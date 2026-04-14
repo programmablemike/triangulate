@@ -58,12 +58,10 @@ loaded from `$HOME/.triangulate`; override with `--config`). Settings live at th
 
 ```json
 {
-  "triangulate": {
-    "marker_file": "BUILD.root",
-    "start_directory": "/home/mike/myproject",
-    "case_sensitive": true,
-    "max_depth": 5
-  }
+  "marker_file": "BUILD.root",
+  "start_directory": "/home/mike/myproject",
+  "case_sensitive": true,
+  "max_depth": 5
 }
 ```
 
@@ -74,12 +72,12 @@ Triangulate is case-sensitive by default, but this can be overridden through the
 One of the main use cases for Triangulate is to be able to keep an environment variable
 up-to-date with the project root directory automatically as you navigate in a shell.
 
-Enable this behavior with `--env-var-enable` (or `TRIANGULATE_ENV_VAR_ENABLE=true`).
-By default we set `TRIANGULATE_ROOT`; override the name with `--env-var-name` or
+This behavior is enabled automatically when `--env-var-name` (or `TRIANGULATE_ENV_VAR_NAME`)
+is set. By default we set `TRIANGULATE_ROOT`; override the name with `--env-var-name` or
 `TRIANGULATE_ENV_VAR_NAME`:
 
 ```shell
-$ triangulate --env-var-enable --env-var-name PROJECT_ROOT
+$ triangulate --env-var-name PROJECT_ROOT
 /path/to/project
 $ echo "$PROJECT_ROOT"
 /path/to/project
