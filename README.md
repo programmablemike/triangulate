@@ -1,5 +1,9 @@
 # triangulate
 
+<p align="center">
+  <img src="./logo.svg" alt="triangulate logo" width="280"/>
+</p>
+
 Triangulate is a command-line tool for identifying a project's root directory
 path.
 
@@ -12,160 +16,214 @@ brew tap programmablemike/homebrew-tap
 brew install triangulate
 ```
 
-## license
-
-This project is licensed under the MIT License. See [LICENSE](./LICENSE) for details.
-
 ## description
 
-Triangulate is a tool for triangulating the root directory of a project. It does
-this by recursively searching the path of the current working directory until it
-finds a marker file.
+Triangulate walks upward from the current (or a specified) directory until it
+finds a marker file, then prints the path of the directory that contains it.
+This makes it easy to run commands relative to your project root regardless of
+where you are in the directory tree.
 
 ## examples
 
-By default we search for the root directory marked by the file `TRIANGULATE`
-starting at the current working directory.
-
-For the directory structure:
+Given this directory structure:
 
 ```text
-/home
-  /mike
-    /myproject
-      TRIANGULATE
-      go.pkg
-      main.go
-      /lib
-        /logging
-          logging.go
-        /cmd
-          cmd.go
-        /server
-          server.go
+/home/mike/myproject/
+  TRIANGULATE          ← marker file
+  go.mod
+  main.go
+  lib/
+    logging/
+      logging.go
+    cmd/
+      cmd.go
 ```
 
-We run the following commands:
+### Basic usage
 
 ```shell
-# Navigate to a directory in the project
-$: cd /home/mike/lib/logging
-# Run a command using triangulate to set the current directory to the root directory first
-$: pushd $(triangulate); go build -o ./output/myproject; popd;
+# From anywhere inside the project, print the project root
+$ cd /home/mike/myproject/lib/logging
+$ triangulate
+/home/mike/myproject
 
-# You can also start from an explicit directory path (positional arg)
-$: triangulate /home/mike/lib/logging
+# Pass a path explicitly instead of using the current directory
+$ triangulate /home/mike/myproject/lib/logging
+/home/mike/myproject
+
+# Use the result to run a build from the project root
+$ cd $(triangulate) && go build -o ./output/myproject
+```
+
+### Specifying a custom marker file
+
+```shell
+# Use a different marker file (e.g. go.mod, .git, BUILD.root)
+$ triangulate --marker go.mod
+/home/mike/myproject
+
+# Search for multiple marker files; the first ancestor containing any of them wins
+$ triangulate --marker "go.mod,WORKSPACE"
 /home/mike/myproject
 ```
 
-For flexibility we allow overriding the default file and starting path using
-environment variables (`TRIANGULATE_START_DIRECTORY` and
-`TRIANGULATE_MARKER_FILE`).
+### Limiting search depth
 
-You can also set the value through the `.triangulate` configuration file (by default
-loaded from `$HOME/.triangulate`; override with `--config`). Settings live at the top level.
+```shell
+# Only search up to 3 directory levels above the start directory
+$ triangulate --max-depth 3
+/home/mike/myproject
 
-```json
-{
-  "marker_file": "BUILD.root",
-  "start_directory": "/home/mike/myproject",
-  "case_sensitive": true,
-  "max_depth": 5
-}
+# Search only the current directory (depth 0)
+$ triangulate --max-depth 0
+triangulate: marker not found
 ```
-
-Triangulate is case-sensitive by default, but this can be overridden through the configuration.
 
 ## setting an environment variable
 
-One of the main use cases for Triangulate is to be able to keep an environment variable
-up-to-date with the project root directory automatically as you navigate in a shell.
+The shell integration is the most powerful way to use Triangulate. After
+installing it (see [installing the shell extension](#installing-the-shell-extension)),
+`$TRIANGULATE_ROOT` is automatically kept in sync as you `cd` between
+directories.
 
-This behavior is enabled automatically when `--env-var-name` (or `TRIANGULATE_ENV_VAR_NAME`)
-is set. By default we set `TRIANGULATE_ROOT`; override the name with `--env-var-name` or
-`TRIANGULATE_ENV_VAR_NAME`:
+You can rename the variable with `--env-var-name` or `TRIANGULATE_ENV_VAR_NAME`:
 
 ```shell
-$ triangulate --env-var-name PROJECT_ROOT
-/path/to/project
+# Rename the exported variable from TRIANGULATE_ROOT to PROJECT_ROOT
+$ export TRIANGULATE_ENV_VAR_NAME=PROJECT_ROOT
+# Now the shell hook will maintain $PROJECT_ROOT automatically as you navigate
+$ cd /home/mike/myproject/lib/logging
 $ echo "$PROJECT_ROOT"
-/path/to/project
+/home/mike/myproject
 ```
+
+## installing the shell extension
+
+Triangulate provides a shell hook for `bash` or `zsh` that re-runs `triangulate`
+whenever `$PWD` changes and keeps `$TRIANGULATE_ROOT` up-to-date automatically.
+
+```shell
+# Append the snippet to your shell config (run once)
+$ triangulate shell zsh >> ~/.zshrc
+$ triangulate shell bash >> ~/.bashrc
+
+# Or source it inline without modifying your config
+$ eval "$(triangulate shell zsh)"
+```
+
+After sourcing, `$TRIANGULATE_ROOT` is always set to the detected project root
+of the current directory, or unset when no marker is found.
+
+## managing configuration
+
+Use `triangulate config` to read and write the persistent config file
+(`~/.triangulate` by default).
+
+```shell
+# View all current settings
+$ triangulate config list
+
+# Set the default marker files (comma-separated)
+$ triangulate config set marker_files "go.mod,WORKSPACE"
+
+# Set a custom env var name so the shell hook uses it automatically
+$ triangulate config set env_var_name PROJECT_ROOT
+
+# Limit how deep triangulate searches by default
+$ triangulate config set max_depth 10
+
+# Disable case-sensitive marker matching
+$ triangulate config set case_sensitive false
+
+# Read back a single value
+$ triangulate config get marker_files
+go.mod,WORKSPACE
+
+# Validate the config file format
+$ triangulate config validate
+valid
+```
+
+The full set of supported config keys:
+
+| Key               | Type             | Description                                        |
+|-------------------|------------------|----------------------------------------------------|
+| `marker_files`    | comma-separated  | Files whose presence marks a project root          |
+| `start_directory` | path             | Default start directory (overrides cwd)            |
+| `case_sensitive`  | bool             | Whether marker matching is case-sensitive          |
+| `max_depth`       | int              | Max directory levels to search (0 = current only)  |
+| `env_var_name`    | string           | Env var name the shell hook exports                |
+
+Example config file (`~/.triangulate`):
+
+```json
+{
+  "marker_files": ["go.mod", "WORKSPACE"],
+  "case_sensitive": true,
+  "max_depth": 10,
+  "env_var_name": "PROJECT_ROOT"
+}
+```
+
+## environment variables
+
+All settings can also be provided via environment variables. They take precedence
+over the config file but are overridden by explicit CLI flags.
+
+| Variable                    | Description                                  |
+|-----------------------------|----------------------------------------------|
+| `TRIANGULATE_MARKER_FILE`   | Comma-separated list of marker file names    |
+| `TRIANGULATE_START_DIRECTORY` | Default start directory                    |
+| `TRIANGULATE_CASE_SENSITIVE`  | Case sensitivity (`true`/`false`)           |
+| `TRIANGULATE_MAX_DEPTH`       | Maximum search depth                        |
+| `TRIANGULATE_ENV_VAR_NAME`    | Name of the env var the shell hook exports  |
 
 ## using the SDK
 
-If you need to add triangulate functionality to a Go project you can use the
-Triangulate SDK which is defined in the `/pkg` directory.
+If you need triangulate functionality inside a Go project, import the package
+directly:
 
-To import it:
+```shell
+go get github.com/programmablemike/triangulate/pkg/triangulate
+```
 
 ```go
 package main
 
 import (
     "fmt"
-    "os"
-    "github.com/programmablemike/triangulate"
+    "log"
+
+    "github.com/programmablemike/triangulate/pkg/triangulate"
 )
 
 func main() {
-    opts, err := triangulate.ResolveOptions(triangulate.Options{})
+    // ResolveOptions merges defaults, config file, env vars, and explicit overrides.
+    // Precedence: defaults < config file < env vars < Options fields.
+    opts, err := triangulate.ResolveOptions(triangulate.Options{
+        // Override the marker file to use go.mod instead of TRIANGULATE
+        MarkerFiles: []string{"go.mod"},
+        // Limit the upward search to 5 levels
+        MaxDepth:    5,
+        MaxDepthSet: true,
+    })
     if err != nil {
-        panic(err)
+        log.Fatal(err)
     }
+
     root, err := triangulate.FindRoot(opts)
     if err != nil {
-        panic(err)
+        // triangulate.ErrNotFound means no marker was found within the depth limit
+        log.Fatal(err)
     }
-    fmt.Println("project root= ", root)
+
+    fmt.Println("project root:", root)
 }
 ```
 
-## installing the shell extension
+Pass an empty `triangulate.Options{}` to use the config file and environment
+variables alone with no code-level overrides.
 
-Triangulate works as a shell extension for `bash` or `zsh`. To install run the shell command
-with the name of the shell you are using. This will output a command you can add directory to
-your shell configuration `.zshrc` or `.bashrc`.
+## license
 
-You can also directly source it using `eval` if you want to avoid polluting your shell configuration with code
-
-```shell
-$: triangulate shell zsh >> .zshrc
-# or source directly
-$: eval $(triangulate shell zsh)
-```
-
-The shell snippet installs a hook that re-runs `triangulate` whenever `$PWD` changes and keeps
-`$TRIANGULATE_ROOT` (or `TRIANGULATE_ENV_VAR_NAME` if set) up-to-date with the detected project
-root.
-
-## environment variables
-
-Here's a list of environment variables you can set.
-
-`TRIANGULATE_MARKER_FILE`: Set the file that marks the root directory.
-
-`TRIANGULATE_START_DIRECTORY`: Set the default directory.
-
-`TRIANGULATE_CASE_SENSITIVE`: Set the case sensitivity.
-
-`TRIANGULATE_MAX_DEPTH`: Set the maximum search depth.
-
-`TRIANGULATE_ENV_VAR_NAME`: The name of the environment variable to set. When set, the value is exported automatically.
-
-## configuration example
-
-Here's the configuration values that can be set.
-
-```json
-{
-  "marker_files": ["BUILD.root"],
-  "start_directory": "/home/mike/myproject",
-  "case_sensitive": true,
-  "max_depth": 10,
-  "env_var_name": "TRIANGULATE_PROJECT_ROOT"
-}
-```
-
-Manage the file from the CLI with `triangulate config`: use `list` to view all settings,
-`get <key>` / `set <key> <value>` to query or update fields, and `validate` to check format.
+This project is licensed under the MIT License. See [LICENSE](./LICENSE) for details.
