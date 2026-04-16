@@ -4,10 +4,27 @@
   <img src="./logo.svg" alt="triangulate logo" width="280"/>
 </p>
 
-Triangulate is a command-line tool for identifying a project's root directory
-path.
+Triangulate finds your project's root directory by walking upward from the
+current directory until it locates a marker file. This allows you to run commands
+relative to a project root from anywhere in that project's directory tree.
 
-## installation
+## Contents
+
+- [Installation](#installation)
+  - [Homebrew](#homebrew)
+  - [Linux](#linux)
+- [Examples](#examples)
+  - [Basic usage](#basic-usage)
+  - [Specifying a custom marker file](#specifying-a-custom-marker-file)
+  - [Limiting search depth](#limiting-search-depth)
+- [Setting an environment variable](#setting-an-environment-variable)
+- [Installing the shell extension](#installing-the-shell-extension)
+- [Managing configuration](#managing-configuration)
+- [Environment variables](#environment-variables)
+- [Using the SDK](#using-the-sdk)
+- [License](#license)
+
+## Installation
 
 ### Homebrew
 
@@ -16,14 +33,12 @@ brew tap programmablemike/homebrew-tap
 brew install triangulate
 ```
 
-## description
+### Linux
 
-Triangulate walks upward from the current (or a specified) directory until it
-finds a marker file, then prints the path of the directory that contains it.
-This makes it easy to run commands relative to your project root regardless of
-where you are in the directory tree.
+Download the binary, `.deb`, or `.rpm` package for your architecture from the
+[releases page](https://github.com/programmablemike/triangulate/releases).
 
-## examples
+## Examples
 
 Given this directory structure:
 
@@ -79,10 +94,10 @@ $ triangulate --max-depth 0
 triangulate: marker not found
 ```
 
-## setting an environment variable
+## Setting an environment variable
 
 The shell integration is the most powerful way to use Triangulate. After
-installing it (see [installing the shell extension](#installing-the-shell-extension)),
+installing it (see [Installing the shell extension](#installing-the-shell-extension)),
 `$TRIANGULATE_ROOT` is automatically kept in sync as you `cd` between
 directories.
 
@@ -97,7 +112,7 @@ $ echo "$PROJECT_ROOT"
 /home/mike/myproject
 ```
 
-## installing the shell extension
+## Installing the shell extension
 
 Triangulate provides a shell hook for `bash` or `zsh` that re-runs `triangulate`
 whenever `$PWD` changes and keeps `$TRIANGULATE_ROOT` up-to-date automatically.
@@ -114,7 +129,7 @@ $ eval "$(triangulate shell zsh)"
 After sourcing, `$TRIANGULATE_ROOT` is always set to the detected project root
 of the current directory, or unset when no marker is found.
 
-## managing configuration
+## Managing configuration
 
 Use `triangulate config` to read and write the persistent config file
 (`~/.triangulate` by default).
@@ -165,20 +180,20 @@ Example config file (`~/.triangulate`):
 }
 ```
 
-## environment variables
+## Environment variables
 
 All settings can also be provided via environment variables. They take precedence
 over the config file but are overridden by explicit CLI flags.
 
-| Variable                    | Description                                  |
-|-----------------------------|----------------------------------------------|
-| `TRIANGULATE_MARKER_FILE`   | Comma-separated list of marker file names    |
-| `TRIANGULATE_START_DIRECTORY` | Default start directory                    |
-| `TRIANGULATE_CASE_SENSITIVE`  | Case sensitivity (`true`/`false`)           |
-| `TRIANGULATE_MAX_DEPTH`       | Maximum search depth                        |
-| `TRIANGULATE_ENV_VAR_NAME`    | Name of the env var the shell hook exports  |
+| Variable                      | Description                                  |
+|-------------------------------|----------------------------------------------|
+| `TRIANGULATE_MARKER_FILE`     | Comma-separated list of marker file names    |
+| `TRIANGULATE_START_DIRECTORY` | Default start directory                      |
+| `TRIANGULATE_CASE_SENSITIVE`  | Case sensitivity (`true`/`false`)            |
+| `TRIANGULATE_MAX_DEPTH`       | Maximum search depth                         |
+| `TRIANGULATE_ENV_VAR_NAME`    | Name of the env var the shell hook exports   |
 
-## using the SDK
+## Using the SDK
 
 If you need triangulate functionality inside a Go project, import the package
 directly:
@@ -224,6 +239,6 @@ func main() {
 Pass an empty `triangulate.Options{}` to use the config file and environment
 variables alone with no code-level overrides.
 
-## license
+## License
 
 This project is licensed under the MIT License. See [LICENSE](./LICENSE) for details.
