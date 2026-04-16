@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 260" width="320" height="260">
+  <defs>
+    <style>
+      .structure { fill: none; stroke: #1e3a5f; stroke-linejoin: round; stroke-linecap: round; }
+      .root      { fill: #1e3a5f; }
+      .node      { fill: #2563eb; }
+      .path      { stroke: #2563eb; stroke-linecap: round; fill: none; }
+      .ring      { fill: none; stroke: #1e3a5f; }
+      .wordmark  { fill: #1e3a5f; font-family: 'Courier New', Courier, monospace; font-weight: bold; letter-spacing: 3px; }
+      .tagline   { fill: #2563eb; font-family: 'Courier New', Courier, monospace; letter-spacing: 1px; }
+    </style>
+  </defs>
+
+  <!-- ── Outer triangle ── -->
+  <polygon class="structure" points="160,28 296,218 24,218" stroke-width="3.5"/>
+
+  <!-- ── Root node at apex ── -->
+  <!-- Outer pulse ring -->
+  <circle class="ring" cx="160" cy="28" r="16" stroke-width="1.5" opacity="0.3"/>
+  <!-- Inner ring -->
+  <circle class="ring" cx="160" cy="28" r="11" stroke-width="1.5" opacity="0.5"/>
+  <!-- Solid dot -->
+  <circle class="root" cx="160" cy="28" r="7"/>
+
+  <!-- ── Inner dashed triangle (triangulation zone) ── -->
+  <polygon class="structure" points="160,82 228,186 92,186"
+           stroke-width="1.5" stroke-dasharray="6,5" opacity="0.35"/>
+
+  <!-- ── Left base node and downward search path ── -->
+  <circle class="node" cx="24" cy="218" r="5.5"/>
+  <!-- dashed path extending below left base (showing upward walk that got us here) -->
+  <polyline class="path" points="10,240 24,218 40,236"
+            stroke-width="2" stroke-dasharray="4,4" opacity="0.7"/>
+
+  <!-- ── Right base node and downward search path ── -->
+  <circle class="node" cx="296" cy="218" r="5.5"/>
+  <polyline class="path" points="282,240 296,218 310,236"
+            stroke-width="2" stroke-dasharray="4,4" opacity="0.7"/>
+
+  <!-- ── Centre convergence dot ── -->
+  <circle class="node" cx="160" cy="152" r="3.5" opacity="0.45"/>
+
+  <!-- ── Thin guidelines from base nodes to apex (showing the search walk) ── -->
+  <line class="path" x1="24" y1="218" x2="160" y2="28"
+        stroke-width="1" stroke-dasharray="5,6" opacity="0.2"/>
+  <line class="path" x1="296" y1="218" x2="160" y2="28"
+        stroke-width="1" stroke-dasharray="5,6" opacity="0.2"/>
+
+  <!-- ── Wordmark ── -->
+  <text class="wordmark" x="160" y="246" text-anchor="middle" font-size="20">
+    triangulate
+  </text>
+</svg>
